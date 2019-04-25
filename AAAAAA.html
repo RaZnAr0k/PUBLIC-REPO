@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA</title>
+</head>
+
+
+<body>
+<script>
+
+	
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+
+
+//CONSTANTS
+
+
+var CV_W = 800;
+var CV_H = 600;
+
+var NN_W = 181;
+var NN_H = 229;
+
+var GRD_Y = 540;
+
+var NN_Y_ACC = 1;
+
+var SPC_KEYCODE = 32; //keycode
+
+var NN_JUMP_SPD = 20;
+var NN_X_SPD = 20;
+
+var BG_W = 1000;
+
+var NN_NR_FPROW = 5;
+var NN_NR_ANIMFRAMES = 7;
+
+var NN_ANIMSPEED = 3;
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+
+
+//SETUP
+
+
+
+//I. Canvas
+
+var canvas = document.createElement('canvas');
+var c = canvas.getContext('2d');
+
+canvas.width = CV_W;
+canvas.height = CV_H;
+
+document.body.appendChild(canvas);
+
+
+//II. Nanonaut
+
+var nanonautImage = new Image();
+nanonautImage.src = 'animatednanonaut.png';
+
+var nanonautX = CV_W / 2;
+var nanonautY = GRD_Y - NN_H;
+
+
+//III. Background
+
+	//I. Sky
+
+	c.fillStyle = '#adfcff';
+	c.fillRect (0, 0, CV_W, GRD_Y - 40);
+	
+	
+	//II. BG
+
+	var backgroundImage = new Image();
+	backgroundImage.src = 'background.png';
+
+
+	//III. Ground
+
+	c.fillStyle = '#91ffa9';
+	c.fillRect (0, GRD_Y - 40, CV_W, CV_H - GRD_Y + 40);
+
+
+//IV. Nanonaut movement
+
+window.addEventListener('keydown', onKeyDown);
+window.addEventListener('keyup', onKeyUp);
+
+
+window.addEventListener('load', start);
+
+
+	function start(){
+
+		window.requestAnimationFrame(mainLoop);
+
+	}
+
+var nanonautYspd = 0;
+var spcKeyIsPressed = false;  //keypress variable
+var nanonautAir= false;
+var nanonautFrameNr = 0;
+
+
+//V. Camera
+
+var camX = 0;
+var camY = 0;
+
+
+//VI. Sprites
+
+	
+	//I. Nanonaut
+
+	var nanonautSpriteSheet = {
+
+
+		nrFramePerRow: 5,
+		spriteWidth: NN_W,
+		spriteHeight: NN_H,
+		image: nanonautImage
+
+
+};
+
+var gameFrameCtr = 0;
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+//MAIN LOOP
+
+
+
+function mainLoop(){
+
+
+	update();
+	draw();
+
+	window.requestAnimationFrame(mainLoop);
+
+
+}
+
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+//PLAYER INPUT
+
+
+function onKeyDown(event) {
+
+	if (event.keyCode === SPC_KEYCODE) {
+
+
+		
+		spcKeyIsPressed = true;
+
+
+	}
+
+}
+
+function onKeyUp(event) {
+
+	if (event.keyCode === SPC_KEYCODE){
+
+		
+		spcKeyIsPressed = false;
+	}
+}
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+//UPDATING
+
+function update(){
+
+
+gameFrameCtr = gameFrameCtr + 1;
+
+
+//I. Running
+
+nanonautX = nanonautX + NN_X_SPD;
+
+//II. Jumping
+
+
+if (spcKeyIsPressed) {							//when "x" key is pressed
+
+
+	nanonautYspd = -NN_JUMP_SPD;
+	nanonautAir = true;
+
+
+}
+
+//III. Gravity
+
+nanonautY = nanonautY + nanonautYspd;
+nanonautYspd = nanonautYspd + NN_Y_ACC;		
+
+
+	if (nanonautY > (GRD_Y - NN_H)) {
+
+			nanonautY = GRD_Y - NN_H;
+			nanonautYspd = 0;
+			nanonautAir = false;
+
+	}
+
+//IV. Camera
+
+camX = nanonautX - 150;
+
+//V. Animation
+
+
+
+
+if ((gameFrameCtr % NN_ANIMSPEED) === 0) {
+
+
+	nanonautFrameNr = nanonautFrameNr + 1;
+	   
+		if (nanonautFrameNr >= NN_NR_ANIMFRAMES) {
+		nanonautFrameNr = 0;
+
+			}
+
+}
+
+}
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+
+
+//DRAWING
+
+function draw(){
+
+
+	c.clearRect(0, 0, CV_W, CV_H);
+
+	
+	//Background
+
+		//I. Sky
+
+		c.fillStyle = '#adfcff';
+		c.fillRect (0, 0, CV_W, GRD_Y - 40);
+	
+	
+		//II. BG
+
+		var backgroundImage = new Image();
+		backgroundImage.src = 'background.png';
+
+		//II - A. BG Movement
+
+		var bgX = - (camX % BG_W);
+		c.drawImage(backgroundImage, bgX, - 210);
+		c.drawImage(backgroundImage, bgX + BG_W, - 210);
+
+
+		//III. Ground
+
+		c.fillStyle = '#91ffa9';
+		c.fillRect (0, GRD_Y - 40, CV_W, CV_H - GRD_Y + 40);
+
+
+
+	//I. Nanonaut
+
+	var nanonautSpriteSheetRow = Math.floor(nanonautFrameNr / NN_NR_FPROW);
+	var nanonautSpriteSheetColumn = nanonautFrameNr % NN_NR_FPROW;
+	var nanonautSpriteSheetX = nanonautSpriteSheetColumn * NN_W;
+	var nanonautSpriteSheetY = nanonautSpriteSheetRow * NN_H;
+
+
+
+	c.drawImage(nanonautImage, nanonautSpriteSheetX, nanonautSpriteSheetY, NN_W, NN_H, nanonautX - camX, nanonautY - camY, NN_W, NN_H);
+
+
+
+
+
+
+
+}
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+
+
+
+
+
+
+</script>
+</body>
+</html>
